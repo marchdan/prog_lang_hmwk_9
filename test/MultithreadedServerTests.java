@@ -43,7 +43,7 @@ public class MultithreadedServerTests extends TestCase {
 			accounts[i] = new Account(Z-i);
 		}			 
 		
-		MultithreadedServer.runServer("src/hw09/data/increment", accounts);
+		MultithreadedServer.runServer("hw09/data/increment", accounts);
 	
 		// assert correct account values
 		for (int i = A; i <= Z; i++) {
