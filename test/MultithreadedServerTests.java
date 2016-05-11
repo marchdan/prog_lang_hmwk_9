@@ -52,6 +52,85 @@ public class MultithreadedServerTests extends TestCase {
 		}		
 
 	 }
-	 	  	 
+	 
+	 @Test
+	 public void testRotate() throws IOException{
+	 	
+	 	//initialize accounts
+	 	accounts = new Account[numLetters];
+	 	for (int i = A; i <= Z; i++){
+	 		accounts[i] = new Account(Z-i);
+	 	}
+	 	
+	 	MultithreadedServer.runServer("hw09/data/rotate", accounts);
+	 	
+	 	//assert correct account values
+	 	int i;
+	 	for (i = A; i <= Z; i++){
+	 		Character c = new Character((char) (i+'A'));
+	 		System.out.println(c + ": " + accounts[i].getValue());
+	 	}
+	 }
+	 //=========================================================================
+	 @Test 
+	 public void testDecrement() throws IOException{
+	 	
+	 	//initialize accounts
+	 	accounts = new Account[numLetters];
+	 	for (int i = A; i <= Z; i++){
+	 		accounts[i] = new Account(Z-i);
+	 	}
+	 	
+	 	MultithreadedServer.runServer("hw09/data/decrement", accounts);
+	 	
+	 	//assert correct account values
+	 	for (int i = A; i <= Z; ++i){
+	 		Character c = new Character((char) (i+'A'));
+	 		assertEquals("Account " + c + " differs", Z - i - 1, accounts[i].getValue());
+	 	}
+	 }
+	 //=========================================================================
 	
+	 @Test
+	 public void testSwap() throws IOException{
+	 	
+	 	//initialize accounts
+	 	accounts = new Account[numLetters];
+	 	for (int i = A; i <= Z; i++){
+	 		accounts[i] = new Account(Z-i);
+	 	}
+	 	
+	 	MultithreadedServer.runServer("hw09/data/swap", accounts);
+	 	
+	 	//assert correct account values
+	 	for (int i = A; i <= Z; ++i){
+	 		Character c = new Character((char) (i+'A'));
+	 		if ( (i + 'A') >= 13 + 'A') {
+	 			assertEquals("Account " + c + " differs", 25 + Z - i + 2, accounts[i].getValue());
+	 		}
+	 		
+	 	}
+	 }
+	 
+	 //=========================================================================
+	 @Test
+	 public void testModulo() throws IOException{
+	 	
+	 	//initialize accounts
+	 	accounts = new Account[numLetters];
+	 	for (int i = A; i <= Z; i++){
+	 		accounts[i] = new Account(Z-i);
+	 	}
+	 	
+	 	MultithreadedServer.runServer("hw09/data/modulo", accounts);
+	 	
+	 	//assert correct account values
+	 	for (int i = A; i <= Z; ++i){
+	 		Character c = new Character((char) (i+'A'));
+	 		if ( ((i + 'A') <= 13 + 'A') && ((i + 'A') != 4)) {
+	 			assertEquals("Account " + c + " differs", 4 + Z - i, accounts[i].getValue());
+	 		}
+	 		
+	 	}
+	 }
 }
