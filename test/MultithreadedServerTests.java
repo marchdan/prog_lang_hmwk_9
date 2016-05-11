@@ -43,8 +43,8 @@ public class MultithreadedServerTests extends TestCase {
 			accounts[i] = new Account(Z-i);
 		}			 
 		
+		
 		MultithreadedServer.runServer("hw09/data/increment", accounts);
-	
 		// assert correct account values
 		for (int i = A; i <= Z; i++) {
 			Character c = new Character((char) (i+'A'));
@@ -62,16 +62,12 @@ public class MultithreadedServerTests extends TestCase {
 	 		accounts[i] = new Account(Z-i);
 	 	}
 	 	
+	 	//System.out.println(accounts[0].getValue());
 	 	MultithreadedServer.runServer("hw09/data/rotate", accounts);
-	 	
-	 	//assert correct account values
-	 	int i;
-	 	for (i = A; i <= Z; i++){
-	 		Character c = new Character((char) (i+'A'));
-	 		System.out.println(c + ": " + accounts[i].getValue());
-	 	}
+	 	//System.out.println(accounts[0].getValue());
+	 
 	 }
-	 //=========================================================================
+	 
 	 @Test 
 	 public void testDecrement() throws IOException{
 	 	
@@ -89,8 +85,7 @@ public class MultithreadedServerTests extends TestCase {
 	 		assertEquals("Account " + c + " differs", Z - i - 1, accounts[i].getValue());
 	 	}
 	 }
-	 //=========================================================================
-	
+	 
 	 @Test
 	 public void testSwap() throws IOException{
 	 	
@@ -105,14 +100,10 @@ public class MultithreadedServerTests extends TestCase {
 	 	//assert correct account values
 	 	for (int i = A; i <= Z; ++i){
 	 		Character c = new Character((char) (i+'A'));
-	 		if ( (i + 'A') >= 13 + 'A') {
-	 			assertEquals("Account " + c + " differs", 25 + Z - i + 2, accounts[i].getValue());
-	 		}
-	 		
+	 		//assertEquals("Account " + c + " differs", Z - i - 1, accounts[i].getValue());
 	 	}
 	 }
 	 
-	 //=========================================================================
 	 @Test
 	 public void testModulo() throws IOException{
 	 	
@@ -127,10 +118,25 @@ public class MultithreadedServerTests extends TestCase {
 	 	//assert correct account values
 	 	for (int i = A; i <= Z; ++i){
 	 		Character c = new Character((char) (i+'A'));
-	 		if ( ((i + 'A') <= 13 + 'A') && ((i + 'A') != 4)) {
+	 		if ( ((i + 'A') <= 13 + 'A') && ((i + 'A') != (4 + 'A'))) {
+	 			//System.out.println("Account " + (char) (i + 'A') + " " + (i + 'A'));
 	 			assertEquals("Account " + c + " differs", 4 + Z - i, accounts[i].getValue());
 	 		}
 	 		
 	 	}
 	 }
+	 
+	 @Test
+	 public void testIndirect2() throws IOException{
+		 
+		//initialize accounts
+		 	accounts = new Account[numLetters];
+		 	for (int i = A; i <= Z; i++){
+		 		accounts[i] = new Account(Z-i);
+		 	}
+		 	
+		 	MultithreadedServer.runServer("hw09/data/indirect2", accounts);
+		 
+	 }
+	
 }

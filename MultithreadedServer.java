@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Collections;
 
 
-//A cached account class keeps track of the current and starting values
+//Cached account class keeps track of the current and starting values
 //of a given account in a single thread.
 class CachedAccount {
     
@@ -43,12 +43,12 @@ class CachedAccount {
         return account;
     }
     
-    //Make sure the account is set to be opened for reading.
+    //Sets account to be opened for reading.
     public void SetReading(){
         reading_account = true;
     }
     
-    //Make sure the account is set to be opened for writing.
+    //Sets account to be opened for writing.
     public void SetWriting(){
         writing_account = true;
     }
@@ -76,7 +76,6 @@ class CachedAccount {
             }
         }
         catch(TransactionAbortException exception){
-        	//System.out.println("Failed opening " + GetName());
             if (opened == true){
             	close();
             }
@@ -106,7 +105,6 @@ class CachedAccount {
     //Updates the actual account's value with the cached account's current value.
     public void update() {
         try {
-        	//System.out.println("UPDATING " + GetName() + " to " + current_value);
             account.update(current_value);
         }
         catch(TransactionUsageError exc){
@@ -115,6 +113,7 @@ class CachedAccount {
         }
     }
     
+    //Verifies account that has been opened for reading
     public void verify() throws TransactionAbortException{
         try{
             account.verify(initial_value);
@@ -141,7 +140,7 @@ class Task implements Runnable {
     private List<CachedAccount> cached_accounts = new ArrayList<CachedAccount>();
     
 
-    // TO DO: The sequential version of Task peeks at accounts
+    // The sequential version of Task peeks at accounts
     // whenever it needs to get a value, and opens, updates, and closes
     // an account whenever it needs to set a value.  This won't work in
     // the parallel version.  Instead, you'll need to cache values
@@ -150,24 +149,30 @@ class Task implements Runnable {
     // writing, or both, (2) verify all previously peeked-at values,
     // (3) perform all updates, and (4) close all opened accounts.
 
+    //Task Constructor
     public Task(Account[] allAccounts, String trans) {
+        //allAccounts is a shared immutable state
         accounts = allAccounts;
         transaction = trans;
     }
     
-    // TO DO: parseAccount currently returns a reference to an account.
+    // parseAccount currently returns a reference to an account.
     // You probably want to change it to return a reference to an
     // account *cache* instead.
-    //
     
     //A function that takes in an account name and whether it's being opened for
     //reading or writing. It returns the cached account if it has already been
     //stored or returns a new cached account and stores it.
     private CachedAccount parseAccount(String name, boolean forWriting) {
+        
         int accountNum = (int) (name.charAt(0)) - (int) 'A';
+        
         if (accountNum < A || accountNum > Z)
             throw new InvalidTransactionError();
+            
         Account a = accounts[accountNum];
+
+        //Handles case where name is followed by asterik
         for (int i = 1; i < name.length(); i++) {
             if (name.charAt(i) != '*')
                 throw new InvalidTransactionError();
@@ -180,24 +185,30 @@ class Task implements Runnable {
                 a = accounts[accountNum];
             }
             else{
-                accountNum = cached_accounts.get(searcher).peek();
+                accountNum = cached_accounts.get(searcher).peek() % numLetters;
                 a = accounts[accountNum];
             }
         }
+        
+        //check to see if account is already cached
         int searcher = AlreadyCached((char)(accountNum + 'A'));
         CachedAccount ca;
+        
         if (searcher == -1){
             ca = new CachedAccount(a, (char) (accountNum + 'A'));
         }
         else{
             ca = cached_accounts.get(searcher);
         }
+        
+        //Set reading and writing as necessary
         if (forWriting){
             ca.SetWriting();
         }
         else{
             ca.SetReading();
         }
+        
         if (searcher == -1){
             cached_accounts.add(ca);
         }
@@ -252,13 +263,17 @@ class Task implements Runnable {
         
         //Keep going until the transactions have successfully been submitted.
         while(true){
+            
         	cached_accounts.clear();
-        	//System.out.println(commands[0]);
+        	
             //Calculates the transactions using the current values.
         	try {
-				Thread.sleep((long) ThreadLocalRandom.current().nextDouble(100, 1000));
+				Thread.sleep((long) ThreadLocalRandom.current().nextDouble(100, 200));
 			} catch (InterruptedException e2) {}
+			
+			//Loop through commands
             for (int i = 0; i < commands.length; i++) {
+                
                 String[] words = commands[i].trim().split("\\s");
                 if (words.length < 3)
                     throw new InvalidTransactionError();
@@ -268,6 +283,7 @@ class Task implements Runnable {
                 if (!words[1].equals("="))
                     throw new InvalidTransactionError();
                     
+                //Parse right hand side of command
                 int rhs = parseAccountOrNum(words[2]);
 
                 
@@ -284,14 +300,12 @@ class Task implements Runnable {
                         throw new InvalidTransactionError();
                 }
                 cached_accounts.get(AlreadyCached(lhs.GetName())).SetValue(rhs);
-                //System.out.println("Attempting: " + commands[i]);
-                //System.out.println("Set the value of " + lhs.GetName() + " to " + cached_accounts.get(AlreadyCached(lhs.GetName())).peek());
             }
             
             
             int opened_accounts = 0;
+            
             //Try block to attempt to open all accounts that need to be read from or written to.
-            //System.out.println(transaction + ": Attempting to open the needed accounts.");
             try{
                 SortAccounts();
                 for (int x = 0; x < cached_accounts.size(); x++){
@@ -299,10 +313,10 @@ class Task implements Runnable {
                     opened_accounts += 1;
                 }
             }
+            
             //Closes all accounts that were successfully opened prior to the error.
             catch (TransactionAbortException e) {
-            		//System.out.println(transaction + ": Failed to open all files, closing " + opened_accounts + " accounts.");
-                    // won't happen in sequential version
+                
                     while (opened_accounts > 0){
                         cached_accounts.get(opened_accounts - 1).close();
                         opened_accounts -= 1;
@@ -316,7 +330,6 @@ class Task implements Runnable {
            
             
             //Try block to attempt to verify that the values of the cached accounts haven't changed since the calculations.
-            //System.out.println(transaction + ": Attempting to verify the needed accounts.");
             int x = 0;
             try{
                 for (x = 0; x < cached_accounts.size(); x++){
@@ -327,7 +340,6 @@ class Task implements Runnable {
             }
             //Closes all cached accounts if there has been a change.
             catch(TransactionAbortException e){
-            	//System.out.println(transaction + ": Expected account " + cached_accounts.get(x).GetName() + " to be " + cached_accounts.get(x).peek() + " but it was " + cached_accounts.get(x).GetCachedAccount().getValue());
                 for (x = 0; x < cached_accounts.size(); x++){
                     cached_accounts.get(x).close();   
                 }
@@ -338,21 +350,17 @@ class Task implements Runnable {
             }
             
             //Try block to update all accounts that have been modified by the transactions.
-            //System.out.println(transaction + ": Updating the accounts.");
             for (x = 0; x < cached_accounts.size(); x++){
                 if (cached_accounts.get(x).writing_account){
                     cached_accounts.get(x).update();
-                    //System.out.println("Updating account " + cached_accounts.get(x).GetName() + " to be " + cached_accounts.get(x).GetCachedAccount().getValue());
                 }
             }
             
-            //System.out.println(transaction + ": Closing all the accounts.");
             //Try block to close all accounts that have been opened.
             for (x = 0; x < cached_accounts.size(); x++){
                 cached_accounts.get(x).close();
             }
             
-            //System.out.println(transaction + ": Transaction complete.");
             break;
         }
     }
@@ -364,26 +372,28 @@ public class MultithreadedServer {
 	// modifies: accounts
 	// effects: accounts change according to transactions in inputFile
     public static void runServer(String inputFile, Account accounts[])
+        //accounts[] is going to a shared mutable state.
         throws IOException {
 
         // read transactions from input file
         String line;
+        
+        //input is a shared immutable state.
         BufferedReader input =
             new BufferedReader(new FileReader(inputFile));
 
-        // TO DO: you will need to create an Executor and then modify the
+        // Create an Executor and then modify the
         // following loop to feed tasks to the executor instead of running them
-        // directly.  DONE?
+        // directly.
         
         ExecutorService e = Executors.newCachedThreadPool();
 
         while ((line = input.readLine()) != null) {
             e.execute(new Task(accounts, line));
-            
-            //Task t = new Task(accounts, line);
-            //t.run();
         }
+        
         e.shutdown();
+        
         try{
 	        if (!e.awaitTermination(60, TimeUnit.SECONDS)){
 	            e.shutdownNow();
