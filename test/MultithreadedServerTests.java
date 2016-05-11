@@ -100,7 +100,6 @@ public class MultithreadedServerTests extends TestCase {
 	 	//assert correct account values
 	 	for (int i = A; i <= Z; ++i){
 	 		Character c = new Character((char) (i+'A'));
-	 		//assertEquals("Account " + c + " differs", Z - i - 1, accounts[i].getValue());
 	 	}
 	 }
 	 
@@ -119,7 +118,6 @@ public class MultithreadedServerTests extends TestCase {
 	 	for (int i = A; i <= Z; ++i){
 	 		Character c = new Character((char) (i+'A'));
 	 		if ( ((i + 'A') <= 13 + 'A') && ((i + 'A') != (4 + 'A'))) {
-	 			//System.out.println("Account " + (char) (i + 'A') + " " + (i + 'A'));
 	 			assertEquals("Account " + c + " differs", 4 + Z - i, accounts[i].getValue());
 	 		}
 	 		
